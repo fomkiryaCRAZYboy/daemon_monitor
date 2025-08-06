@@ -1,0 +1,22 @@
+successfull daemons array initialization
+successfull verification tokens initialization
+
+failed to update daemon: deamon1
+
+failed to update daemon: daemon2
+
+failed to update daemon: daemon3
+successfull verification tokens initialization
+
+failed to update daemon: deamon1
+
+failed to update daemon: daemon2
+
+failed to update daemon: daemon3
+successfull verification tokens initialization
+
+failed to update daemon: deamon1
+
+failed to update daemon: daemon2
+
+failed to update daemon: daemon3
