@@ -1,3 +1,3 @@
-deamon1
+daemon1
 daemon2
 daemon3

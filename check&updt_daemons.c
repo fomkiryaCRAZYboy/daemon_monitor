@@ -40,8 +40,8 @@ char* parse(const char* line)
     int j;
 
     i = 0;
-    while(line[i] != ' ') ++i;
-    while(line[i] == ' ') ++i;
+    while(line[i] != ':') ++i;
+    while(!(isalpha(line[i]))) ++i;
 
     parsed_line = malloc(NAME_MAX);
     if(!parsed_line)
@@ -73,7 +73,7 @@ void update_daemon_info(DAEMON* daemons_array,
 
     for(i = 0; i < DAEMONS_COUNT; ++i)
     {
-        if(strcmp(daemon_name, daemons_array[i].daemon_name))
+        if(strcmp(daemon_name, daemons_array[i].daemon_name) == 0)
         {
             daemons_array[i].daemon_pid = daemon_pid;
             strncpy(daemons_array[i].daemon_status, daemon_status, STATUS);
@@ -99,11 +99,12 @@ void* check_daemons(DAEMON* daemons_array, VERIFICATION_TOKEN tokens[])
     DIR* proc_dir = opendir("/proc");
     if(!proc_dir)
     {
-        printf("error 1\n");
+        syslog(LOG_ERR, "Failed open /proc");
         return NULL;
     }
 
     struct dirent* entry;
+    struct stat entry_stat;
 
     while((entry = readdir(proc_dir)))
     {
@@ -114,14 +115,24 @@ void* check_daemons(DAEMON* daemons_array, VERIFICATION_TOKEN tokens[])
 
         snprintf(filename, PATH_MAX, "/proc/%s/status", entry -> d_name);
 
+        if (stat(filename, &entry_stat) == -1) {
+            continue;
+        }
+
+        if(!S_ISREG(entry_stat.st_mode))
+        {
+            continue;
+        }
+
         status_file = fopen(filename, "r");
         if(!status_file)
         {
             closedir(proc_dir);
 
-            printf("error 2\n");
             return NULL;
         }
+
+
 
         while(fgets(proc_name_line, sizeof(proc_name_line), status_file))
         {
@@ -137,9 +148,9 @@ void* check_daemons(DAEMON* daemons_array, VERIFICATION_TOKEN tokens[])
             fclose(status_file);
             closedir(proc_dir);
 
-            printf("error 3\n");
             return NULL;
         }
+
 
         for(int j = 0; j < DAEMONS_COUNT; ++j)
         {
@@ -151,7 +162,6 @@ void* check_daemons(DAEMON* daemons_array, VERIFICATION_TOKEN tokens[])
                     fclose(status_file);
                     closedir(proc_dir);
 
-                    printf("error 4\n");
                     return NULL;
                 }
 
@@ -159,6 +169,8 @@ void* check_daemons(DAEMON* daemons_array, VERIFICATION_TOKEN tokens[])
                 free(proc_status);
 
                 set_daemon_updated(tokens, j);
+
+                syslog(LOG_INFO, "[%s] update success: pid = %d", proc_name, atoi(entry -> d_name));
             }
         }
 

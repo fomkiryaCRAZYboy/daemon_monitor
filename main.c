@@ -3,51 +3,91 @@
 
 int main(void)
 {
-    /* инициализация файла логов */
-    FILE* log_file_fp = fopen(LOG_FILE, "w");
-    if(!log_file_fp)
+    pid_t monitor_pid = fork();
+
+    if(monitor_pid < 0)
     {
-        perror("fopen err");
         exit(EXIT_FAILURE);
     }
+
+    if(monitor_pid > 0)
+    {
+        _exit(EXIT_SUCCESS);
+    }
+
+    if(chdir("/") != 0)
+    {
+        exit(EXIT_FAILURE);
+    } 
+
+    pid_t monitor_session_id = setsid();
+    if(monitor_session_id == -1)
+    { 
+        exit(EXIT_FAILURE);
+    }
+
+
+    freopen("/dev/null", "r", stdin);
+    freopen("/dev/null", "w", stdout);
+    freopen("/dev/null", "w", stderr);
+
+
+    openlog("deamon-monitor", LOG_NDELAY | LOG_CONS | LOG_PID, LOG_DAEMON);
+    syslog(LOG_INFO, "---Starting Monitor Deamon---");
+
 
     DAEMON* daemons_array = init_daemons_array();
     if(!daemons_array)
     {
-        fputs("failed to init daemons array\n", log_file_fp);
+        syslog(LOG_ERR, "Failed to init daemons array");
         exit(EXIT_FAILURE);
     }
 
-    fputs("successfull daemons array initialization\n", log_file_fp);
 
+    char* check_result = NULL;
+    char* analyze_result = NULL;
 
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 10; ++i)
     {
         VERIFICATION_TOKEN* verification_tokens = init_verification_tokens();
         if(!verification_tokens)
         {
-            fputs("failed to init verification tokens array\n", log_file_fp);
+            syslog(LOG_ERR, "Failed to init verification tokens array");
             exit(EXIT_FAILURE);
         }
 
-        fputs("successfull verification tokens initialization\n", log_file_fp);
 
-
-        if(check_daemons(daemons_array, verification_tokens) == NULL)
+        check_result = check_daemons(daemons_array, verification_tokens);
+        if(!check_result)
         {
-            fputs("detected error while checking daemons\n", log_file_fp);
+            syslog(LOG_ERR, "Detected error while checking daemons");
+
+            free(verification_tokens);
             exit(EXIT_FAILURE);
         }
-        analyze_verification_tokens(verification_tokens, daemons_array, log_file_fp);
+        
+        syslog(LOG_INFO, "Daemons check result: %s\n", check_result);
+
+
+        analyze_result = analyze_verification_tokens(verification_tokens, daemons_array);
+        if(strcmp(analyze_result, "analyze success") != 0)
+        {
+            syslog(LOG_INFO, "Detected error while analyze verification tokens");
+
+            free(verification_tokens);
+            free(check_result);
+
+            exit(EXIT_FAILURE);
+        }
 
         free(verification_tokens);
+        free(check_result);
+        free(analyze_result);
         
         sleep(5);
     }
 
 
     free(daemons_array);
-    fclose(log_file_fp);
-
     exit(EXIT_SUCCESS);
 }

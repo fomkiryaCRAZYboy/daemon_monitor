@@ -1,4 +1,4 @@
-#define _POSIX_C_SOURCE 200809L
+#define _POSIX_C_SOURCE 202412L
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,12 +10,13 @@
 #include <limits.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <sys/stat.h>
 
 #ifndef HEAD_H
 #define HEAD_H
 
-#define LOG_FILE          "mylogs.txt"  
-#define DAEMONS_LIST_FILE "daemons.txt" /* Имя файла, в котором будут хранится имена демонов */ 
+#define LOG_FILE          "/home/fomchik/programming/daemon_monitor/mylogs.txt"  
+#define DAEMONS_LIST_FILE "/home/fomchik/programming/daemon_monitor/daemons.txt" /* Имя файла, в котором будут хранится имена демонов */ 
 #define DAEMONS_COUNT     3 /* Количество демонов */
 #define STATUS            32 /* Длина статуса демона */
 
@@ -39,7 +40,8 @@ typedef struct
 VERIFICATION_TOKEN* init_verification_tokens();
 DAEMON* init_daemons_array();
 
-void analyze_verification_tokens(VERIFICATION_TOKEN*, DAEMON*, FILE*);
+char* analyze_verification_tokens(VERIFICATION_TOKEN*, DAEMON*);
+char* restart_daemon(const char*);
 
 void* check_daemons(DAEMON*, VERIFICATION_TOKEN[]);
 void set_daemon_updated(VERIFICATION_TOKEN*, int);

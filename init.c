@@ -8,7 +8,6 @@ DAEMON* init_daemons_array()
     DAEMON* deamons_array = malloc(sizeof(DAEMON) * DAEMONS_COUNT);
     if(!deamons_array)
     {
-        perror("malloc");
         return NULL;
     }
 
@@ -18,7 +17,6 @@ DAEMON* init_daemons_array()
 
     fp = fopen(DAEMONS_LIST_FILE, "r");
     if (!fp){
-        perror("fopen ggg");
         return NULL;
     }
 
