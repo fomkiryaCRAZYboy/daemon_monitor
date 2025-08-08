@@ -1,8 +1,10 @@
-// Вспомогательный функционал для основных функций надзирателя
-
 #include "head.h"
 
-// Функция инициализации демона начальными значениями
+/* 
+    initialization of the daemon array 
+    default, pid = -1, status = none
+*/
+
 DAEMON* init_daemons_array()
 {
     DAEMON* deamons_array = malloc(sizeof(DAEMON) * DAEMONS_COUNT);
@@ -37,6 +39,12 @@ DAEMON* init_daemons_array()
 }
 
 
+
+/*  
+    initialization of verification tokens
+    "is_updated" flag tells, has the demon information been updated (pid, status)
+    default, update flag = false
+*/
 VERIFICATION_TOKEN* init_verification_tokens()
 {
     int i;

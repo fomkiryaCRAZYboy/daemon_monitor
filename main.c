@@ -1,13 +1,19 @@
 #include "head.h"
 
 
+/*
+    daemonize the process, call initialization functions.
+
+    in the main loop: check daemons, analyze the result and restart the daemon if necessary
+*/
+
 int main(void)
 {
     pid_t monitor_pid = fork();
 
     if(monitor_pid < 0)
     {
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     }
 
     if(monitor_pid > 0)
@@ -17,13 +23,13 @@ int main(void)
 
     if(chdir("/") != 0)
     {
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     } 
 
     pid_t monitor_session_id = setsid();
     if(monitor_session_id == -1)
     { 
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     }
 
 
@@ -36,37 +42,43 @@ int main(void)
     syslog(LOG_INFO, "---Starting Monitor Deamon---");
 
 
+    syslog(LOG_DEBUG, "Initializing daemons array...");
     DAEMON* daemons_array = init_daemons_array();
     if(!daemons_array)
     {
         syslog(LOG_ERR, "Failed to init daemons array");
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     }
 
 
     char* check_result = NULL;
     char* analyze_result = NULL;
 
-    for(int i = 0; i < 10; ++i)
+    syslog(LOG_DEBUG, "Starting main loop...");
+
+    for( ; ; )
     {
+        syslog(LOG_DEBUG, "Initializing verification tokens...");
         VERIFICATION_TOKEN* verification_tokens = init_verification_tokens();
         if(!verification_tokens)
         {
             syslog(LOG_ERR, "Failed to init verification tokens array");
-            exit(EXIT_FAILURE);
+            _exit(EXIT_FAILURE);
         }
 
-
+        syslog(LOG_DEBUG, "Call check_daemons()...");
+        
         check_result = check_daemons(daemons_array, verification_tokens);
         if(!check_result)
         {
             syslog(LOG_ERR, "Detected error while checking daemons");
 
             free(verification_tokens);
-            exit(EXIT_FAILURE);
+            _exit(EXIT_FAILURE);
         }
         
         syslog(LOG_INFO, "Daemons check result: %s\n", check_result);
+
 
 
         analyze_result = analyze_verification_tokens(verification_tokens, daemons_array);
@@ -77,7 +89,7 @@ int main(void)
             free(verification_tokens);
             free(check_result);
 
-            exit(EXIT_FAILURE);
+            _exit(EXIT_FAILURE);
         }
 
         free(verification_tokens);
@@ -89,5 +101,4 @@ int main(void)
 
 
     free(daemons_array);
-    exit(EXIT_SUCCESS);
 }

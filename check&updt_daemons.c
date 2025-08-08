@@ -8,7 +8,10 @@ void set_daemon_updated(VERIFICATION_TOKEN* tokens, int index)
 
 
 
-
+/* 
+    looks for the string "Status:   <status>" 
+    in /proc/<pid>/status and parses it 
+*/
 char* get_status(FILE* fp)
 {
     char status_line[STATUS + 20] = {0};
@@ -32,7 +35,9 @@ char* get_status(FILE* fp)
 
 
 
-
+/* 
+    for example, from the line "Name: <name>" it only gets <name>
+*/
 char* parse(const char* line)
 {
     char* parsed_line = NULL;   
@@ -63,7 +68,9 @@ char* parse(const char* line)
 
 
 
-
+/*
+    sets a new pid and status for the daemon from daemons_array
+*/
 void update_daemon_info(DAEMON* daemons_array, 
                          const char* daemon_name, 
                          const char* daemon_status, 
@@ -85,7 +92,13 @@ void update_daemon_info(DAEMON* daemons_array,
 
 
 
-
+/*
+    main function of checking
+    
+    opens directory /proc and files /proc/<pid>/status.
+    by means of parsing it finds out names of processes running in the system and in a cycle compares with names of daemons from an array.
+    having found a daemon, updates information about it
+*/
 void* check_daemons(DAEMON* daemons_array, VERIFICATION_TOKEN tokens[])
 {
     char proc_name_line[NAME_MAX + 20] = {0};
@@ -93,7 +106,6 @@ void* check_daemons(DAEMON* daemons_array, VERIFICATION_TOKEN tokens[])
 
     char filename[PATH_MAX] = {0};
     FILE* status_file;
-
 
 
     DIR* proc_dir = opendir("/proc");
@@ -124,6 +136,7 @@ void* check_daemons(DAEMON* daemons_array, VERIFICATION_TOKEN tokens[])
             continue;
         }
 
+
         status_file = fopen(filename, "r");
         if(!status_file)
         {
@@ -142,6 +155,7 @@ void* check_daemons(DAEMON* daemons_array, VERIFICATION_TOKEN tokens[])
             }
         }
 
+
         proc_name = parse(proc_name_line);
         if(!proc_name)
         {
@@ -156,6 +170,7 @@ void* check_daemons(DAEMON* daemons_array, VERIFICATION_TOKEN tokens[])
         {
             if(strcmp(proc_name, daemons_array[j].daemon_name) == 0)
             {
+
                 char* proc_status = get_status(status_file);
                 if(!proc_status)
                 {

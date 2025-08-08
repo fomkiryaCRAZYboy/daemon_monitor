@@ -1,11 +1,19 @@
 #include "head.h"
 
+
+/*
+    analysis of filled tokens
+
+    if the token of any daemon has not been updated (flag "is_updated" = false), the daemon restart function is called
+*/
 char* analyze_verification_tokens(VERIFICATION_TOKEN* tokens, DAEMON* daemons_array)
 {
     char* restart_result = NULL;
 
     char daemon_binary_path[PATH_MAX] = {0};
     pid_t daemon_pid = -1;
+
+    int status;
 
     int i;
     for(i = 0; i < DAEMONS_COUNT; ++i)
@@ -35,13 +43,20 @@ char* analyze_verification_tokens(VERIFICATION_TOKEN* tokens, DAEMON* daemons_ar
 
                 _exit(restart_result ? EXIT_FAILURE : EXIT_SUCCESS);
             }
-
+ 
         }
     }
 
     return strdup("analyze success");
 }
 
+
+/*
+    restarting the daemon
+    
+    the path to the executable file is formed based on the passed daemon name, 
+    the presence of the file is checked, after which the function execve() is called
+*/
 char* restart_daemon(const char* daemon_name)
 {
     char daemon_binary_path[PATH_MAX] = {0};
@@ -54,7 +69,6 @@ char* restart_daemon(const char* daemon_name)
 
     else snprintf(daemon_binary_path, PATH_MAX, "/usr/bin/%s", daemon_name);
 
-    /* file existance check */
     if (access(daemon_binary_path, X_OK) != 0) {
         return strdup("daemon binary not found or not executable");
     }
