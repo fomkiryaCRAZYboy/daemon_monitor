@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/fomchik/programming/daemon_monitor/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

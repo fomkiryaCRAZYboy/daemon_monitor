@@ -1,0 +1,6 @@
+/home/fomchik/programming/daemon_monitor/build/mips-build/CMakeFiles/monitor.dir
+/home/fomchik/programming/daemon_monitor/build/mips-build/CMakeFiles/monitor-mips.dir
+/home/fomchik/programming/daemon_monitor/build/mips-build/CMakeFiles/clean-all.dir
+/home/fomchik/programming/daemon_monitor/build/mips-build/CMakeFiles/show-pids.dir
+/home/fomchik/programming/daemon_monitor/build/mips-build/CMakeFiles/edit_cache.dir
+/home/fomchik/programming/daemon_monitor/build/mips-build/CMakeFiles/rebuild_cache.dir

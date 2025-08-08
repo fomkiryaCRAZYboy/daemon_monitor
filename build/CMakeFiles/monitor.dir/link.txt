@@ -1,0 +1,1 @@
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/monitor.dir/link.d CMakeFiles/monitor.dir/audit_analysis.c.o "CMakeFiles/monitor.dir/check&updt_daemons.c.o" CMakeFiles/monitor.dir/init.c.o CMakeFiles/monitor.dir/main.c.o -o monitor
